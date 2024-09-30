@@ -17,7 +17,7 @@ import { UsuarioModule } from './users-auth/usuario/usuario.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        uri: `mongodb://${configService.get<string>('DB_HOST')}:${configService.get<string>('DB_PORT')}/${configService.get<string>('DB_NAME')}`,
+        uri: `mongodb+srv://${configService.get<string>('DB_USER')}:${configService.get<string>('DB_PASS')}@cluster0.la1wg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0/${configService.get<string>('DB_NAME')}`,
       }),
       inject: [ConfigService],
     }),
