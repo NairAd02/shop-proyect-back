@@ -8,8 +8,8 @@ import { Exclude } from "class-transformer";
 export enum RolEnum {
     SuperAdministrador = "Súper Administrador",
     Administrador = "Administrador",
-    Especialista = "Especialista Ing Civil",
-    EspecialistaAvz = "Especialista Ing Civil Avanzado"
+    Especialista = "Trabajador",
+    EspecialistaAvz = "Cliente"
 }
 
 @Schema()

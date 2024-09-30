@@ -1,11 +1,17 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { Exclude, Expose } from "class-transformer";
 import { ReviewSerializable } from "src/review/serializable/review.serializable";
 
 export class ProductSerializable {
+    @ApiProperty({ description: 'Identificador del producto' })
     id: string
+    @ApiProperty({ description: 'Nombre del producto' })
     name: string
+    @ApiProperty({ description: 'Precio del producto' })
     price: number
+    @ApiProperty({ description: 'Descuento del precio que puede tener el producto' })
     discount: number // si no hay discount el valor es 0
+    @ApiProperty({ description: 'URL que define la ruta del servidor donde será almacenada la imagen que referencia al producto' })
     photoURL: string // representa la URL de la imagen que representa al producto
     @Exclude() // no es necesario incluir todas las reseñas hechas al producto
     reviews?: Array<ReviewSerializable>
