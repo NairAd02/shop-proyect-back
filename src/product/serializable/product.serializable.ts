@@ -33,12 +33,14 @@ export class ProductSerializable {
 
     // Método para calcular el discount
     @Expose()
-    public preciodiscount(): number {
+    @ApiProperty({ description: 'Precio del producto una vez realizado el descuento' })
+    public get preciodiscount(): number {
         return this.discount !== 0 ? this.price - (this.price * this.discount) : this.price
     }
     // Método para determinar la reseña promedio del producto
     @Expose()
-    public averageReview(): number {
+    @ApiProperty({ description: 'Promedio que define la categoría del producto' })
+    public get averageReview(): number {
         let average = 0
         // si la cantidad de reviews es distinta de 0
         if (this.reviews.length !== 0) {
