@@ -5,19 +5,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Product } from './schemas/product.schema';
 import { Model } from 'mongoose';
 import { FiltersProduct } from './dto/filters-product';
+import { ProductSerializable } from './serializable/product.serializable';
+import { ReviewService } from 'src/review/review.service';
 
 @Injectable()
 export class ProductService {
-  constructor(@InjectModel(Product.name) private productModel: Model<Product>) { }
+  constructor(@InjectModel(Product.name) private productModel: Model<Product>, private reviewService: ReviewService) { }
 
   async create(createProductDto: CreateProductDto) {
     const product = new this.productModel(createProductDto) // se crea un producto  basado en la información del product dto
-    // se asigna el precio al historial de precios del producto
-    product.priceHistory.push(createProductDto.price)
+
     await product.save() // se almacena el producto en la base de datos
   }
 
-  async findAll(nombre?: string, price?: number, category?: number): Promise<Array<Product>> {
+  async findAll(nombre?: string, price?: number, category?: number): Promise<Array<ProductSerializable>> {
+    const productSerializables = new Array<ProductSerializable>()
     // Construir el objeto de filtro dinámicamente y eliminar propiedades undefined
     // se construyen los filtros de los productos
     const filters: FiltersProduct = new FiltersProduct(undefined, nombre ? { $regex: nombre.toString(), $options: 'i' } : undefined, price, category)
@@ -26,10 +28,17 @@ export class ProductService {
     // se obtiene la list ade productos
     const products = await this.productModel.find(filters).exec();
 
-    return products
+    for (let index = 0; index < products.length; index++) {
+      const product = products[index];
+      productSerializables.push(new ProductSerializable(product._id.toString(), product.name, product.price, product.discount, product.photoURL,
+        await this.reviewService.findAllWithOutRelations(product._id.toString())))
+    }
+
+    return productSerializables
   }
 
-  async findOne(id: string, nombre?: string, price?: number, category?: number): Promise<Product> {
+  async findOne(id: string, nombre?: string, price?: number, category?: number): Promise<ProductSerializable | undefined> {
+    let productSerializable: ProductSerializable | undefined = undefined
     // Construir el objeto de filtro dinámicamente y eliminar propiedades undefined
     // se construyen los filtros de los productos
     const filters: FiltersProduct = new FiltersProduct(id, nombre ? { $regex: nombre.toString(), $options: 'i' } : undefined, price, category)
@@ -37,8 +46,16 @@ export class ProductService {
 
     // se obtiene la list ade productos
     const product = await this.productModel.findOne(filters).exec()
-  
-    return product
+
+    // si fue encontrado un producto con esos filtros
+    if (product) {
+      productSerializable = new ProductSerializable(product._id.toString(), product.name, product.price, product.discount, product.photoURL,
+        await this.reviewService.findAllWithOutRelations(product._id.toString()))
+    }
+    else
+      throw new BadRequestException('No fue encontrado un producto con esos filtros')
+
+    return productSerializable
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
@@ -50,10 +67,10 @@ export class ProductService {
       // se actualizan los campos proporcionados para modificar
       if (updateProductDto.name) // si se desea modificar el campo "name"
         product.name = updateProductDto.name
-      if (updateProductDto.price && updateProductDto.price !== product.priceHistory[product.priceHistory.length - 1]) // si se desea modificar el campo "price" y el precio a modificar es distinto del último precio registrado
-        product.priceHistory.push(updateProductDto.price) // se añade el nuevo precio a la lista que representa el historial de los precios
-      if (updateProductDto.category) // si se desea modificar el campo "category"
-        product.category = updateProductDto.category
+      if (updateProductDto.price) // si se desea modificar el campo "price" y el precio a modificar es distinto del último precio registrado
+        product.price = updateProductDto.price
+      if (updateProductDto.discount) // si se desea modificar el campo "descuento"
+        product.discount = updateProductDto.discount
       if (updateProductDto.photoURL) // si se desea modificar el campo "photoURL"
         product.photoURL = updateProductDto.photoURL
 

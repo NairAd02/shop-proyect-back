@@ -1,13 +1,14 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Exclude, Expose } from "class-transformer";
 
 @Schema()
 export class Product {
     @Prop()
     name: string
     @Prop()
-    priceHistory: Array<number> // representa el historial de precios que ha tenido el producto
+    price: number
     @Prop()
-    category: number
+    discount: number // si no hay descuento el valor es 0
     @Prop()
     photoURL: string // representa la URL de la imagen que representa al producto
 }
