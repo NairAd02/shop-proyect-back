@@ -32,7 +32,8 @@ export class UsuarioService {
     const usuariosSerializables: Array<UsuarioSerializable> = new Array<UsuarioSerializable>()
     // Construir el objeto de filtro dinámicamente y eliminar propiedades undefined
     // se construyen los filtros de los usuarios
-    const filters: FiltersUsuarioDTO = new FiltersUsuarioDTO(undefined, nombre ? { $regex: nombre.toString(), $options: 'i' } : undefined, email, rol)
+    const filters: FiltersUsuarioDTO = new FiltersUsuarioDTO(undefined, nombre ? { $regex: nombre.toString(), $options: 'i' } : undefined,
+      email ? { $regex: email.toString(), $options: 'i' } : undefined, rol)
     Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]); // se eliminan los valores undefined de los filtros
 
     // se obtiene la list ade usuarios
@@ -129,6 +130,17 @@ export class UsuarioService {
       throw new HttpException("No existe un usuario con ese id", HttpStatus.BAD_REQUEST)
 
     return isContrasenaPerteneceUsuario
+  }
+
+  // Método para eliminar a varíos usuarios específicados
+  public async deleteUsers(listId: Array<string> /* representa las lista con los identificadores que se van a eliminar  */) {
+    for (let index = 0; index < listId.length; index++) {
+      const id = listId[index];
+      // se elimina uno a uno cada usuario
+      await this.usuariosModel.deleteOne({
+        _id: id
+      }).exec()
+    }
   }
 
   // Método para eliminar un usuario en específico

@@ -34,10 +34,23 @@ export class UsuarioController {
     return await this.usuarioService.getProfileUser(idUsuario);
   }
 
+  @Get('getUsuario')
+  @ApiOkResponse({ type: UsuarioSerializable })
+  public async findOne(@Query('id') id: string, @Query('nombre') nombre?: String, @Query('rol') rol?: RolEnum, @Query('email') email?: String) {
+    return await this.usuarioService.findOneSerializable(id, nombre, rol, email)
+  }
+
+
   @Patch('updateUser/:idUsuario')
   @ApiBody({ type: UpdateUsuarioDto })
   public async update(@Param('idUsuario') idUsuario: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
     await this.usuarioService.update(idUsuario, updateUsuarioDto)
+    return { success: true }
+  }
+
+  @Post('deleteUsers')
+  public async deleteUsers(@Body() payload: { listId: Array<string> /* representa las lista con los identificadores que se van a eliminar  */ }) {
+    await this.usuarioService.deleteUsers(payload.listId)
     return { success: true }
   }
 

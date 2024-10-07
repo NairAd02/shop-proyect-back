@@ -45,6 +45,7 @@ export class AuthService {
                         // se crea el token
                         const token = await this.jwtService.signAsync(payload) // se crea un token con la información del payload
                         res = { token: token, payload } // se retorna el token junto con el id del usuario
+
                     }
                     else
                         throw new HttpException("No se le ha asignado un rol al usuario", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
@@ -55,7 +56,7 @@ export class AuthService {
                     await this.mailerService.sendEmail(new SendEmailDTO([{
                         name: userEntity.nombreUsuario.toString(),
                         address: userEntity.email.toString()
-                    }], "Código de Verificación", "Le damos la Bienvenida a los Servicios de Fast-Inspection", codigoActivacionHTML(this.configService.get<string>('NAME_APP'),
+                    }], "Código de Verificación", "Le damos la Bienvenida a los Servicios de Shop", codigoActivacionHTML(this.configService.get<string>('NAME_APP'),
                         codigoActivacion,
                         userEntity.nombreUsuario.toString(), this.configService.get<string>('EMAIL_APP')), {
                         name: this.configService.get<string>('NAME_APP'),
@@ -68,10 +69,10 @@ export class AuthService {
                 }
             }
             else
-                throw new HttpException("La contrasena es incorrecta", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
+                throw new HttpException("El nombre de usuario o contraseña es incorrecto", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
         }
         else
-            throw new HttpException("El nombre de usuario es incorrecto", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
+            throw new HttpException("El nombre de usuario o contraseña es incorrecto", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
 
         return res
     }
@@ -142,10 +143,20 @@ export class AuthService {
             throw new HttpException("No existe un usuario con ese identificador", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
     }
 
+    // Método para obtener el identificador de un usuario dado su email
+    public async findUserWithEmail(email: string): Promise<{ idUser: string }> {
+        const user = await this.userService.findOneSerializable(undefined, undefined, undefined, email)
+
+        // Si fue encontrado un usuario con ese email
+        if (user)
+            return { idUser: user.id } // se retorna el id del usuario
+        else
+            throw new HttpException("No existe un usuario con ese identificador", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
+    }
+
     // Método para generar un código de activicación de cuenta
     public generarCodigoActivacion(length: number): String {
         // Genera un código aleatorio en formato hexadecimal y lo recorta al tamaño deseado
         return randomBytes(length).toString('hex').slice(0, length);
     }
-
 }

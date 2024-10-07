@@ -18,11 +18,12 @@ export class ProductService {
     await product.save() // se almacena el producto en la base de datos
   }
 
-  async findAll(nombre?: string, price?: number, category?: number): Promise<Array<ProductSerializable>> {
+  async findAll(nombre?: string, price?: number, discount?: number,
+    preciodiscount?: number, averageReview?: number): Promise<Array<ProductSerializable>> {
     const productSerializables = new Array<ProductSerializable>()
     // Construir el objeto de filtro dinámicamente y eliminar propiedades undefined
     // se construyen los filtros de los productos
-    const filters: FiltersProduct = new FiltersProduct(undefined, nombre ? { $regex: nombre.toString(), $options: 'i' } : undefined, price, category)
+    const filters: FiltersProduct = new FiltersProduct(undefined, nombre ? { $regex: nombre.toString(), $options: 'i' } : undefined, price, discount)
     Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]); // se eliminan los valores undefined de los filtros
 
     // se obtiene la list ade productos
@@ -30,8 +31,12 @@ export class ProductService {
 
     for (let index = 0; index < products.length; index++) {
       const product = products[index];
-      productSerializables.push(new ProductSerializable(product._id.toString(), product.name, product.price, product.discount, product.photoURL,
-        await this.reviewService.findAllWithOutRelations(product._id.toString())))
+      // se construye un product serializable
+      const productSerializable = new ProductSerializable(product._id.toString(), product.name, product.price, product.discount, product.photoURL,
+        await this.reviewService.findAllWithOutRelations(product._id.toString()))
+      // si el producto cumple con los filtros de las propiedades calculables
+      if ((!preciodiscount || productSerializable.preciodiscount === preciodiscount) && (!averageReview || productSerializable.averageReview === averageReview))
+        productSerializables.push(productSerializable)
     }
 
     return productSerializables
@@ -84,6 +89,16 @@ export class ProductService {
   async remove(id: string) {
     return await this.productModel.deleteOne({
       _id: id
-    })
+    }).exec()
+  }
+
+  async removeAll(listId: Array<string>) {
+    for (let index = 0; index < listId.length; index++) {
+      // se elimina uno a uno cada producto
+      const id: string = listId[index]
+      await this.productModel.deleteOne({
+        _id: id
+      }).exec()
+    }
   }
 }

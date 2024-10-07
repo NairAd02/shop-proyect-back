@@ -6,6 +6,7 @@ import { CreateUsuarioDto } from '../usuario/dto/create-usuario.dto';
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ChangePasswordDTO } from '../usuario/dto/change-password.dto';
 import { TokenResponseSerializable } from './serializable/token-response.serializable';
+import { FindUserEmailDTO } from './dto/find-user-email.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -14,7 +15,7 @@ export class AuthController {
 
   @Post('login') // Ruta para obtener todas las configuraciones registradas
   @ApiBody({ type: LoginDTO })
-  @ApiOkResponse({ type: TokenResponseSerializable  })
+  @ApiOkResponse({ type: TokenResponseSerializable })
   public async login(@Body() loginDTO: LoginDTO) {
     return await this.authService.login(loginDTO)
   }
@@ -31,6 +32,12 @@ export class AuthController {
   public async cambiarContrasena(@Param('idUsuario') idUsuario: string, @Body() payload: ChangePasswordDTO) {
     await this.authService.cambiarContrasena(idUsuario, payload.newContrasena, payload.contrasenaAnterior)
     return { success: true }
+  }
+
+  @Post('findUserWithEmail')
+  @ApiBody({ type: FindUserEmailDTO })
+  public async findUserWithEmail(@Body() payload: FindUserEmailDTO) {
+    return await this.authService.findUserWithEmail(payload.email)
   }
 
   @Post('enviarCodigoVerificacionIdentidad/:idUsuario')

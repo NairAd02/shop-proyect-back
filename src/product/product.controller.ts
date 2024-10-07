@@ -19,8 +19,10 @@ export class ProductController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   @ApiOkResponse({ type: [ProductSerializable] })
-  async findAll(@Query('name') name: string, @Query('price') price: string, @Query('category') category: string): Promise<Array<ProductSerializable>> {
-    return await this.productService.findAll(name, price ? +price : undefined, category ? +category : undefined);
+  async findAll(@Query('name') name: string, @Query('price') price: string, @Query('discount') discount: string,
+    @Query('preciodiscount') preciodiscount: string, @Query('averageReview') averageReview: string): Promise<Array<ProductSerializable>> {
+    return await this.productService.findAll(name, price ? +price : undefined, discount ? +discount : undefined,
+      preciodiscount ? +preciodiscount : undefined, averageReview ? +averageReview : undefined);
   }
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOkResponse({ type: ProductSerializable })
@@ -33,6 +35,12 @@ export class ProductController {
   @ApiBody({ type: CreateProductDto })
   async update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return await this.productService.update(id, updateProductDto);
+  }
+
+  @Post('remove-selected')
+  async removeAll(@Body() payload: { listId: Array<string> /* lista con los identificadores de los elmentos que se desean eliminar */ }) {
+    console.log(payload.listId)
+    return await this.productService.removeAll(payload.listId)
   }
 
   @Delete(':id')
