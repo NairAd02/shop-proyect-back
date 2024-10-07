@@ -159,4 +159,26 @@ export class AuthService {
         // Genera un código aleatorio en formato hexadecimal y lo recorta al tamaño deseado
         return randomBytes(length).toString('hex').slice(0, length);
     }
+
+    // Método para verificar si la contraseña proporcionada por el usuario es igual que su contraseña anterior
+    public async verificarOldPassword(idUser: string, oldPassword: string): Promise<{
+        isEquals: boolean
+    }> {
+        let isEquals = false // no son iguales hasta que se demuestre lo contrario
+        // se busca al usuario con ese id
+        const user = await this.userService.findOne(idUser)
+
+        // si fue encontrado el usuario
+        if (user) {
+            // se realiza la comparación de las contraseñas
+            if (await bcrypt.compare(oldPassword, user.contrasena.toString())) // si son iguales
+                isEquals = true
+        }
+        else
+            throw new HttpException("No existe un usuario con ese identificador", HttpStatus.BAD_REQUEST) // se lanza la exeption y se detiene la ejecución del método
+
+        return {
+            isEquals: isEquals
+        }
+    }
 }

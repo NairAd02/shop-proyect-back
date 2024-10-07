@@ -59,4 +59,9 @@ export class AuthController {
     await this.authService.activarCuentaUsuario(activacionDTO.idUsuario, activacionDTO.codigoActivacion)
     return { success: true }
   }
+
+  @Post('verificarOldPassword/:idUser')
+  public async verificarOldPassword(@Param('idUser') idUser: string, @Body() payLoad: { oldPassword: string }) {
+    return await this.authService.verificarOldPassword(idUser, payLoad.oldPassword)
+  }
 }
